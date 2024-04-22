@@ -1,6 +1,7 @@
 # Open-MPI-Genome-search
 Advanced computer architecture project
-## How to compile and run the program
+
+# How to compile and run the program
  * **cd MPI/Advanced Computer Architecture/Libraries/**
  * **gcc -c \*.c**
  * **cd ..**
