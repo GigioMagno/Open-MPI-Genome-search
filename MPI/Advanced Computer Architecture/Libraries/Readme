@@ -1,0 +1,8 @@
+This folder contains the source code of the libraries that have been created for this program.
+hashfun.c contains the set of hash functions that have been used to compute the hash of the pattern and of a set of characters to compute the rabin karp algorithm.
+rabinkarp.c contains the code for the RK algorithm.
+utilities.c contains some functions used to:
+- compute the number of cores that must be active for the computation
+- reading the file
+- splitting the file among process
+- receive the correct portion of file to process
