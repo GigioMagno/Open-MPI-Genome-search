@@ -7,3 +7,8 @@ Advanced computer architecture project
 * ```cd ..```
 * ```mpicc -o parallel parallel2.c -L./Libraries -lhashfun.o -lrabinkarp.o -lutilities.o```
 * ```mpirun parallel TestGenome.txt pattern.txt```
+
+# Structure of the code
+The files are organized as follow:
+* Comment -> brief description on how the function works
+* Body of the function
