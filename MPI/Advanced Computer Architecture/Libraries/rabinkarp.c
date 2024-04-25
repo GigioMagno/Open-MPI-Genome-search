@@ -18,7 +18,7 @@ void rabin_karp_##f(char *txt, char *pattern, const long long int lentxt, const 
 		chunk[lenpat]='\0';\
 		if (hashpat == f(chunk))\
 		{\
-			if (strcmp(pattern, chunk)!=0)\
+			if (strcmp(pattern, chunk)==0)\
 			{\
 				idxs++;\
 			}\
