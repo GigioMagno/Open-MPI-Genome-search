@@ -1,9 +1,21 @@
+/////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+//////////////////// Utilities Header \\\\\\\\\\\\\\\\\\\\
+//////////////// Vito Giacalone  (546646) \\\\\\\\\\\\\\\\
+/////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
 #ifndef UTIL_RABINKARP
 #define UTIL_RABINKARP
 
-int who_is_active(int *flag, long long int txtlen, long long int patlen, int cores);
-char *readFile(char *argv, long long int *len);
-char *split_dataset(char *txt, long long int *chunklen, long long int txtlen, long long int patlen, MPI_Offset offset, int executors);
-char *receive_dataset(MPI_Offset offset, long long int txtlen, long long int patlen, long long int *chunklen, int rank, int executors);
+#include <mpi.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <stddef.h>
+
+size_t who_is_active(int *flag, size_t txtlen, size_t patlen, int cores);
+char *readFile(char *argv, size_t *len);
+char *split_dataset(char *txt, size_t *chunklen, size_t txtlen, size_t patlen, size_t offset, int executors);
+char *receive_dataset(size_t offset, size_t txtlen, size_t patlen, size_t *chunklen, int rank, int executors);
+void null_check(void *ptr);
 
 #endif

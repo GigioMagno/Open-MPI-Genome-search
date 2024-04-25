@@ -1,13 +1,37 @@
-#include <mpi.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
+/////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+///////////////// Utilities Library Body \\\\\\\\\\\\\\\\\
+//////////////// Vito Giacalone  (546646) \\\\\\\\\\\\\\\\
+/////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
 #include "utilities.h"
 
-int who_is_active(int *flag, long long int txtlen, long long int patlen, int cores){
-	
-	long long int actives = txtlen/patlen;
+///////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+//Check if a pointer is null. This function has been created to avoid 
+//to repeat many times the check of the pointer inside the code.								 
+///////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
+void null_check(void *ptr){
+	if (!ptr)
+	{
+		printf("Internal error. Please, try again\n");
+		exit(1);
+	}
+}
+
+///////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+//Check how many cores can be active.
+//The splitting of the text is done dividing the length of the text by 
+//the length of the pattern. If this division is greater than the 
+//available number of cores, the maximum number of available cores is 
+//used (active cores); else the quotient of the previous division is 
+//the number of active cores.
+//The vector flag, is like a bitmap used to notify to the cores who 
+//can be active or not.
+///////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+size_t who_is_active(int *flag, size_t txtlen, size_t patlen, int cores){
+
+	size_t actives = txtlen/patlen;
 	if (actives > cores)
 	{
 		actives = cores;
@@ -24,27 +48,49 @@ int who_is_active(int *flag, long long int txtlen, long long int patlen, int cor
 	return actives;
 }
 
+///////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+//This function computes the length of the file and read it.
+//I used ftello because the return value is of type off_t (64 bit) -> 
+//->it's possible to read file of size > 2GB.
+//fseek and ftell are able to handle 32 bits values (at most 2GB)
+///////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
-char *readFile(char *argv, long long int *len){
+char *readFile(char *filename, size_t *len) {
+    
+    FILE *f = fopen(filename, "r");
+    null_check(f);
+    fseeko(f, 0, SEEK_END);
+    *len = ftello(f);
+    rewind(f);
+    char *txt = (char *)malloc(*len + 1);
+    //null_check(txt);
 
-	//stesso codice seriale
-		FILE *f = fopen(&argv[0], "r");
-		fseek(f, 0L, SEEK_END);
-		*len = ftell(f);
-		rewind(f);
-		char *txt = (char *)malloc(sizeof(char)*(*len +1));
-		fgets(txt, *len +1, f);
-		txt[*len] = '\0';
-		fclose(f);
-		return txt;
+    if (fread(txt, 1, *len, f) != *len) {
+        fprintf(stderr, "Input reading error\n");
+        free(txt);
+        fclose(f);
+        return NULL;
+    }
+
+    txt[*len] = '\0';
+    fclose(f);
+    return txt;
 }
 
+///////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+//This function split the text (received as input) into chunks among 
+//the active cores.
+//The cores with rank from 0 to n-2 receive a chunk of length offset
+//and the core n-1 receive the remaining part of the text.
+//The function takes into account also the overlapping occurrences
+//of the pattern, simply copying also "patlen" extra characters in
+//the chunk.
+///////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
-
-char *split_dataset(char *txt, long long int *chunklen, long long int txtlen, long long int patlen, MPI_Offset offset, int executors){
+char *split_dataset(char *txt, size_t *chunklen, size_t txtlen, size_t patlen, size_t offset, int executors){
 
 	char *chunk = (char *)malloc(sizeof(char) * (offset +1));
-
+	null_check(chunk);
 	strlcpy(chunk, txt, offset+1);
 	chunk[offset] = '\0';
 	*chunklen = offset;
@@ -61,13 +107,18 @@ char *split_dataset(char *txt, long long int *chunklen, long long int txtlen, lo
 	return chunk;
 }
 
+///////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+//This function allows to the core who invoke it, to receive its
+//chunk of text to analyze.
+///////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
-char *receive_dataset(MPI_Offset offset, long long int txtlen, long long int patlen, long long int *chunklen, int rank, int executors){
+char *receive_dataset(size_t offset, size_t txtlen, size_t patlen, size_t *chunklen, int rank, int executors){
 
 	if (rank < executors-1)
 	{
 		*chunklen = offset + patlen -1;
 		char *chunk = (char *)malloc(sizeof(char)*(*chunklen +1));
+		null_check(chunk);
 		chunk[*chunklen]='\0';
 		MPI_Recv(chunk, *chunklen, MPI_CHAR, 0, 100, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 		return chunk;
@@ -75,9 +126,9 @@ char *receive_dataset(MPI_Offset offset, long long int txtlen, long long int pat
 
 	if (rank == executors-1)
 	{
-		//printf("da ricevere ultimo %llu\n", txtlen-rank*offset +1);
 		*chunklen = txtlen - rank*offset + patlen -1;
 		char *chunk = (char *)malloc(sizeof(char)*(*chunklen + 1));
+		null_check(chunk);
 		chunk[*chunklen] = '\0';
 		MPI_Recv(chunk, *chunklen, MPI_CHAR, 0, 101, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 		return chunk;

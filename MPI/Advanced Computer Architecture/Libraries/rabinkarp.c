@@ -1,18 +1,25 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <mpi.h>
-#include "hashfun.h"
-#define P 5
-#define M 101
+/////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+///////////////// RabinKarp Library Body \\\\\\\\\\\\\\\\\
+//////////////// Vito Giacalone  (546646) \\\\\\\\\\\\\\\\
+/////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
+#include "rabinkarp.h"
+
+///////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+//This is a function defined as a macro. This function has parametric
+//name, according to the hash function that is used.
+//The hashes of the pattern and of a portion of the text are computed
+//and iff the two hashes coincide, the check character by character 
+//is performed.
+///////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
 #define RABIN_KARP_WITH_HASH(f) \
-void rabin_karp_##f(char *txt, char *pattern, const long long int lentxt, const long long int lenpat, long long int *occurrences){\
+long long int rabin_karp_##f(char *txt, char *pattern, const size_t lentxt, const size_t lenpat){\
   long long int hashpat = f(pattern);\
 	char *chunk = (char*)malloc(sizeof(char)*(lenpat+1));\
+  null_check(chunk);\
   long long int idxs = 0;\
-	for(long long int i = 0; i <= lentxt-lenpat; i++)\
+	for(size_t i = 0; i <= lentxt-lenpat; i++)\
 	{\
 		chunk = strncpy(chunk, txt+i, sizeof(char)*lenpat);\
 		chunk[lenpat]='\0';\
@@ -24,20 +31,25 @@ void rabin_karp_##f(char *txt, char *pattern, const long long int lentxt, const 
 			}\
 		}\
 	}\
-	*occurrences = idxs;\
+	return idxs;\
   free(chunk);\
-} 
-
+}
 RABIN_KARP_WITH_HASH(polyHash)
 RABIN_KARP_WITH_HASH(djb2)
 RABIN_KARP_WITH_HASH(sdbm)
 RABIN_KARP_WITH_HASH(loselose)
 
+///////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+//The hashes of the pattern and of a portion of the text are computed
+//and iff the two hashes coincide, the check character by character 
+//is performed.
+//The total number of occurrences is returned
+///////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
-void rabin_karp2(char *txt, char *pattern, const long long int lentxt, const long long int lenpat, long long int *occurrences){
+void rabin_karp2(char *txt, char *pattern, const size_t lentxt, const size_t lenpat, long long int *occurrences){
 
 	//SOME VARIABLES...
-  long long int i,j;                      
+  size_t i,j;                      
   long long int pat_hash = 0;           
   long long int txt_hash = 0;
   long long int h = 1;

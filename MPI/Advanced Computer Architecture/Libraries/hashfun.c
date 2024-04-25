@@ -1,12 +1,17 @@
+/////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+////////////////// Hashfun Library Body \\\\\\\\\\\\\\\\\\
+//////////////// Vito Giacalone  (546646) \\\\\\\\\\\\\\\\
+/////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
 #include "hashfun.h"
-#include <string.h>
-#include <math.h>
-#include <limits.h>
-#define P 5
-#define M 101
 
+///////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+//The polyhash function computes the polynomial expansion of a string.
+//Each character is weighted with its own decimal ASCII value and,
+//according to its position inside the string, is multiplied by the 
+//term P^(position).
+///////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
-// COMPUTES A POLYNOMIAL HASH AND REDUCE IT MODULO UINT_MAX	
 long long int polyHash(char *pattern){
 
 	long long int hash = 0;
@@ -23,8 +28,12 @@ return hash;
 
 }
 
+///////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+//The djb2 hashfunction computes the hash by adding the actual value
+//of the hash multiplied by 33 and the decimal value of the ASCII
+//representation of each character
+///////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
-//SOME DIFFERENT HASH FUNCTIONS FOR A COMPARISON...
 long long int djb2(char *pattern){
 
 	long long int hash = 5381;
@@ -38,6 +47,11 @@ long long int djb2(char *pattern){
 	return hash;
 }
 
+///////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+//The sdbm function computes the hash by adding the following elements
+//64*hash + 65536*hash - hash + ASCII value of each character
+///////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
 long long int sdbm(char *pattern){
 
 	long long int hash = 0;
@@ -48,6 +62,11 @@ long long int sdbm(char *pattern){
 
 	return hash;
 }
+
+///////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+//The loselose hash function it's very very simple and creates the 
+//hash adding the ASCII value of each letter of the considered string
+///////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
 long long int loselose(char *pattern){
 
