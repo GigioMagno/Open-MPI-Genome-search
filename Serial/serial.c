@@ -1,8 +1,25 @@
+/////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+//////////////////////// Main Body \\\\\\\\\\\\\\\\\\\\\\\
+//////////////// Vito Giacalone  (546646) \\\\\\\\\\\\\\\\
+/////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
 #include <stdio.h>		
 #include <stdlib.h>
 #include "hashfun.h"
 #include <time.h>
 #include <stddef.h>
+
+/*****PROTOTYPES*****/
+char *readFile(char *filename, size_t *len);
+void rabin_karp2(char *txt, char *pattern, const size_t lentxt, const size_t lenpat, long long int *occurrences);
+
+///////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+//This is a function defined as a macro. This function has parametric
+//name, according to the hash function that is used.
+//The hashes of the pattern and of a portion of the text are computed
+//and iff the two hashes coincide, the check character by character 
+//is performed.
+///////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
 #define RABIN_KARP_WITH_HASH(f) \
 long long int rabin_karp_##f(char *txt, char *pattern, const size_t lentxt, const size_t lenpat){\
@@ -29,15 +46,10 @@ RABIN_KARP_WITH_HASH(djb2)
 RABIN_KARP_WITH_HASH(sdbm)
 RABIN_KARP_WITH_HASH(loselose)
 
-/*****PROTOTYPES*****/
-//START
-char *readFile(char *filename, size_t *len);
-void rabin_karp2(char *txt, char *pattern, const size_t lentxt, const size_t lenpat, long long int *occurrences);
-//END
+///////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+//This function computes the length of the file and read it.
+///////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
-
-/*****READ FILE FUNCTION*****/
-//START
 char *readFile(char *filename, size_t *len) {
     
     FILE *f = fopen(filename, "r");
@@ -58,11 +70,13 @@ char *readFile(char *filename, size_t *len) {
     fclose(f);
     return txt;
 }
-//END
 
-
-
-
+///////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+//The hashes of the pattern and of a portion of the text are computed
+//and iff the two hashes coincide, the check character by character 
+//is performed.
+//The total number of occurrences is returned
+///////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
 void rabin_karp2(char *txt, char *pattern, const size_t lentxt, const size_t lenpat, long long int *occurrences){
 
@@ -130,10 +144,12 @@ void rabin_karp2(char *txt, char *pattern, const size_t lentxt, const size_t len
     }
 }
 
-/*****START-MAIN*****/
+///////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+/////////////////////////// Main function \\\\\\\\\\\\\\\\\\\\\\\\\\\\
+///////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
 int main(int argc, char const *argv[])
 {
-
 	clock_t begin = clock();
 	size_t txtlen;
 	size_t patlen;
@@ -145,7 +161,10 @@ int main(int argc, char const *argv[])
 	long long int occurrences = 0;
 	char *pattern = readFile((char*)argv[2], &patlen);
 	char *txt = readFile((char*)argv[1], &txtlen);
-	//occurrences = rabin_karp_loselose(txt, pattern, strlen(txt), strlen(pattern));
+	//occurrences = rabin_karp_loselose(txt, pattern, txtlen, patlen);
+	//occurrences = rabin_karp_djb2(txt, pattern, txtlen, patlen);
+	//occurrences = rabin_karp_polyHash(txt, pattern, txtlen, patlen);
+	//occurrences = rabin_karp_sdbm(txt, pattern, txtlen, patlen);
 	rabin_karp2(txt, pattern, txtlen, patlen, &occurrences);
 	printf("OCCORRENZE TROVATE:%lld\n", occurrences);
 
