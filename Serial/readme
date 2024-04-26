@@ -1,0 +1,8 @@
+This is the serial version of the Rabin Karp algorithm.
+Please, compile using the following command:
+1. gcc -c hashfun.c
+2. gcc -o serial serial.c -L./ -lhashfun.o
+Execute using:
+- ./serial Text.txt Pattern.txt
+
+(Text and Pattern are the 2 text files on which perform the search)
