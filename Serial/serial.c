@@ -9,7 +9,7 @@
 #include <time.h>
 #include <stddef.h>
 
-/*****PROTOTYPES*****/
+///////////////////////////////Prototypes\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 char *readFile(char *filename, size_t *len);
 void rabin_karp2(char *txt, char *pattern, const size_t lentxt, const size_t lenpat, long long int *occurrences);
 
