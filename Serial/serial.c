@@ -1,181 +1,153 @@
 #include <stdio.h>		
-#include <stdlib.h>		//MALLOC, REALLOC
-#include <string.h>		//STRCMP, STRLEN
-#include <math.h>		//POW
-#include <limits.h>
+#include <stdlib.h>
 #include "hashfun.h"
 #include <time.h>
-//https://cp-algorithms.com/string/string-hashing.html	For simple (but not useful) hash function
+#include <stddef.h>
 
+#define RABIN_KARP_WITH_HASH(f) \
+long long int rabin_karp_##f(char *txt, char *pattern, const size_t lentxt, const size_t lenpat){\
+  long long int hashpat = f(pattern);\
+  char *chunk = (char*)malloc(sizeof(char)*(lenpat+1));\
+  long long int idxs = 0;\
+	for(size_t i = 0; i <= lentxt-lenpat; i++)\
+	{\
+		chunk = strncpy(chunk, txt+i, sizeof(char)*lenpat);\
+		chunk[lenpat]='\0';\
+		if (hashpat == f(chunk))\
+		{\
+			if (strcmp(pattern, chunk)==0)\
+			{\
+				idxs++;\
+			}\
+		}\
+	}\
+	return idxs;\
+  free(chunk);\
+}
+RABIN_KARP_WITH_HASH(polyHash)
+RABIN_KARP_WITH_HASH(djb2)
+RABIN_KARP_WITH_HASH(sdbm)
+RABIN_KARP_WITH_HASH(loselose)
 
 /*****PROTOTYPES*****/
 //START
-char* readFile(char *path);
-int *rabin_karp(char *txt, char *pattern, int *occurrences, unsigned long (*hash)(char *str));
-int *rabin_karp2(char *txt, char *pattern, int *occurrences, unsigned long (*hash)(char *str), unsigned long (*shiftHash)(int hash, int lenpat, int idx, char *txt));
+char *readFile(char *filename, size_t *len);
+void rabin_karp2(char *txt, char *pattern, const size_t lentxt, const size_t lenpat, long long int *occurrences);
 //END
 
 
 /*****READ FILE FUNCTION*****/
 //START
-char* readFile(char *path){
+char *readFile(char *filename, size_t *len) {
+    
+    FILE *f = fopen(filename, "r");
+    fseeko(f, 0, SEEK_END);
+    *len = ftello(f);
+    rewind(f);
+    char *txt = (char *)malloc(*len + 1);
+    //null_check(txt);
 
-	//CREATE A FILE POINTER
-	FILE *f = fopen(path, "r");
+    if (fread(txt, 1, *len, f) != *len) {
+        fprintf(stderr, "Input reading error\n");
+        free(txt);
+        fclose(f);
+        return NULL;
+    }
 
-	//IF THE PATH IS WRONG OR ISN'T POSSIBLE READ THE FILE THROW AN ERROR AND STOP THE PROGRAM
-	if (!f)
-	{
-		printf("Errore apertura file\n");
-		exit(1);
-	}
-
-	//CREATE A CHAR POINTER WHICH WILL POINT TO THE MEMORY REGION THAT CONTAINS THE READ FILE
-	char *txt = (char *) malloc(sizeof(char)*INT_MAX);
-
-	//LET'S READ THE FILE AND STORE IT INTO A STRING
-	fgets(txt, INT_MAX, f);
-
-	//RESIZE THE ALLOCATED MEMORY
-	txt = realloc(txt, strlen(txt)*sizeof(char));
-
-	fclose(f);
-	return txt;
-
+    txt[*len] = '\0';
+    fclose(f);
+    return txt;
 }
 //END
 
 
-// http://www.cse.yorku.ca/~oz/hash.html funzioni di hashing semplici per stringhe
 
 
 
-// https://stackoverflow.com/questions/1579721/why-are-5381-and-33-so-important-in-the-djb2-algorithm
+void rabin_karp2(char *txt, char *pattern, const size_t lentxt, const size_t lenpat, long long int *occurrences){
+
+	//SOME VARIABLES...
+  size_t i,j;                      
+  long long int pat_hash = 0;           
+  long long int txt_hash = 0;
+  long long int h = 1;
+  *occurrences = 0;
 
 
+	//COMPUTES H = P^(LENPAT -1) MODULO M 
+  for (i = 0; i < lenpat - 1; i++)
+  		h = (h * P) % M;
 
-// rabin karp with djb2 hash function
-int *rabin_karp(char *txt, char *pattern, int *occurrences, unsigned long (*hash)(char *str)){
+  //COMPUTE THE HASHES FOR PATTERN AND FIRST WINDOW OF THE TEXT
+  for(i = 0; i < lenpat; i++){
+    	pat_hash = (P * pat_hash + *(pattern + i)) % M;
+      txt_hash = (P * txt_hash + *(txt + i)) % M;
+    }
 
-	int lentxt = strlen(txt);
-	int lenpat = strlen(pattern);
-	unsigned long hashpat = hash(pattern);
-	//CREATE A CHUNK WITH THE DIMENSION OF THE PATTERN
-	char *chunk = (char*)malloc(sizeof(char)*lenpat);
-	int idxs = 0;
-	int *idx = (int*)malloc(sizeof(int)*lentxt);
+  //FOR EACH SLIDING WINDOW OF THE TEXT OF THE DIMENSION OF THE PATTERN
+  for(i = 0; i <= lentxt - lenpat; i++){
 
-	for (int i = 0; i <= lentxt-lenpat; i++)
-	{
-		for (int j = 0; j < lenpat; j++)
-		{
-				chunk[j] = txt[i+j];
-		}
-		if (hashpat == hash(chunk))
-		{
-				
-			if (strcmp(pattern, chunk)==0)
-			{
-				//SAVE THE INDEX OF THE OCCURRENCE AND INCREMENT THE NUMBER OF OCCURRENCES
-				idx[idxs] = i;
-				idxs++;
-			}
-		}
-	}
+  	 //CHECK IF THE HASHES ARE THE SAME
+     if(pat_hash == txt_hash){
 
-	//RETURNS THE NUMBER OF OCCURRENCES
-	*occurrences = idxs;
-	//Returns the vector with the indexes of the first element of occurrences
-	return realloc(idx, idxs*sizeof(int));
+     		//IF THE HASHES ARE THE SAME THEN 
+      	for(j = 0; j < lenpat; j++){
+
+      		//CHECK CHARACTER BY CHARACTER
+          if(*(txt + i + j) != *(pattern + j)){
+
+            //IF THE PATTERN AND THE WINDOW ARE DIFFERENT THEN EXIT THE LOOP
+            break;
+
+          }
+
+
+        }
+
+        //IF THE PATTERN AND THE WINDOW ARE THE SAME
+        if(j == lenpat){
+   	       
+   	      //printf("Pattern found at index %d\n", rank == 0 ? i : i+(txt_len-(pat_len-1)+rest)-pat_len+1+((rank-1)*(txt_len-pat_len+1)));
+          
+          //INCREMENT THE NUMBER OF OCCURRENCES
+          (*occurrences)++;
+        }
+      }
+
+    
+      //UPDATE THE HASH
+      if(i < lentxt - lenpat){
+        
+        //UPDATE THE HASH REMOVING THE FIRST ONE CHARACTER AND ADDING THE FIRST NEXT CHARACTER OF THE TEXT
+        txt_hash = (P * (txt_hash - *(txt + i) * h) + *(txt + i + lenpat)) % M;
+
+        //IF THE HASH IS NEGATIVE
+        if(txt_hash < 0)
+        	
+        	//NORMALIZE IT
+          txt_hash = txt_hash + M;
+      }
+    }
 }
-
-
-int *rabin_karp2(char *txt, char *pattern, int *occurrences, unsigned long (*hash)(char *str), unsigned long (*shiftHash)(int hash, int lenpat, int idx, char *txt)){
-
-	int lentxt = strlen(txt);
-	int lenpat = strlen(pattern);
-	unsigned long hashpat = hash(pattern);
-	//CREATE A CHUNK WITH THE DIMENSION OF THE PATTERN
-	char *chunk = (char*)malloc(sizeof(char)*lenpat);
-	int idxs = 0;
-	int *idx = (int*)malloc(sizeof(int)*lentxt);
-
-	int hashtxt = 0;
-	int flag = 0;
-
-
-	for (int j = 0; j < lenpat; j++)
-	{
-			chunk[j] = txt[j];
-	}
-	hashtxt = hash(chunk);
-
-	for (int i = 0; i < lentxt-lenpat; i++)
-	{
-		flag = 0;
-
-		if (hashpat == hashtxt)
-		{
-			
-			for (int j = 0; j < lenpat; ++j)
-				{
-					if (txt[i+j] != pattern[j])
-						{
-							flag = 1;
-							break;
-						}
-				}
-
-			if (flag == 0)
-			{
-				//SAVE THE INDEX OF THE OCCURRENCE AND INCREMENT THE NUMBER OF OCCURRENCES
-				idx[idxs] = i;
-				idxs++;
-			}
-			
-		} else {
-
-			hashtxt = shiftHash(hashtxt, lenpat, i, txt);
-
-		}
-
-
-
-	}
-
-	//RETURNS THE NUMBER OF OCCURRENCES
-	*occurrences = idxs;
-	//Returns the vector with the indexes of the first element of occurrences
-	return realloc(idx, idxs*sizeof(int));
-}
-
 
 /*****START-MAIN*****/
 int main(int argc, char const *argv[])
 {
 
 	clock_t begin = clock();
-
-	if (argc == 1)
+	size_t txtlen;
+	size_t patlen;
+	if (argc != 3)
 	{
 		printf("Errore, inserire nome file\n");
 		exit(1);
 	}
-	char *txt;
-	int occurrences;
-	char *pattern = readFile((char*)argv[2]);
-	txt = readFile((char*)argv[1]);
-	int *idxs = rabin_karp(txt, pattern, &occurrences,polyHash);
-	//int *idxs = rabin_karp2(txt, pattern, &occurrences, quickHash, shiftHash);
-	printf("OCCORRENZE TROVATE:%d\n", occurrences);
-	for (int i = 0; i < occurrences; i++)
-	{
-		for (int j = 0; j < strlen(pattern); j++)
-		{
-			printf("%c", txt[idxs[i]+j]);
-		}
-		printf("\n");
-	}
+	long long int occurrences = 0;
+	char *pattern = readFile((char*)argv[2], &patlen);
+	char *txt = readFile((char*)argv[1], &txtlen);
+	//occurrences = rabin_karp_loselose(txt, pattern, strlen(txt), strlen(pattern));
+	rabin_karp2(txt, pattern, txtlen, patlen, &occurrences);
+	printf("OCCORRENZE TROVATE:%lld\n", occurrences);
 
 
 	clock_t end = clock();
@@ -186,3 +158,7 @@ int main(int argc, char const *argv[])
 	return 0;
 }
 //END
+
+// http://www.cse.yorku.ca/~oz/hash.html funzioni di hashing semplici per stringhe
+// https://stackoverflow.com/questions/1579721/why-are-5381-and-33-so-important-in-the-djb2-algorithm
+//https://cp-algorithms.com/string/string-hashing.html	For simple (but not useful) hash function

@@ -1,11 +1,21 @@
+/////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+///////////////////// Hashfun Header \\\\\\\\\\\\\\\\\\\\\
+//////////////// Vito Giacalone  (546646) \\\\\\\\\\\\\\\\
+/////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
 #ifndef HASHFUN_H
 #define HASHFUN_H
 
-unsigned long polyHash(char *pattern);
-unsigned long djb2(char *pattern);
-unsigned long sdbm(char *pattern);
-unsigned long loselose(char *pattern);
-unsigned long quickHash(char *pattern);
-unsigned long shiftHash(int hash, int lenpat, int idx, char *txt);
+#include "hashfun.h"
+#include <string.h>
+#include <math.h>
+#include <limits.h>
+#define P 5
+#define M 101
+
+long long int polyHash(char *pattern);
+long long int djb2(char *pattern);
+long long int sdbm(char *pattern);
+long long int loselose(char *pattern);
 
 #endif

@@ -1,19 +1,26 @@
+/////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+////////////////// Hashfun Library Body \\\\\\\\\\\\\\\\\\
+//////////////// Vito Giacalone  (546646) \\\\\\\\\\\\\\\\
+/////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
 #include "hashfun.h"
-#include <string.h>
-#include <math.h>
-#include <limits.h>
-#define p 5
-#define m 197488152910387043
 
-unsigned long polyHash(char *pattern){
+///////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+//The polyhash function computes the polynomial expansion of a string.
+//Each character is weighted with its own decimal ASCII value and,
+//according to its position inside the string, is multiplied by the 
+//term P^(position).
+///////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
-	int hash = 0;
-	int len = strlen(pattern);
+long long int polyHash(char *pattern){
+
+	long long int hash = 0;
+	long long int len = strlen(pattern);
 	if (len!=0)
 	{
-		for (int i = 0; i < len; i++)
+		for (long long int i = 0; i < len; i++)
 		{
-			hash+=pattern[i]*pow(p,i);
+			hash+=pattern[i]*pow(P,i);
 		}
 		hash = hash%UINT_MAX;
 	}
@@ -21,35 +28,16 @@ return hash;
 
 }
 
+///////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+//The djb2 hashfunction computes the hash by adding the actual value
+//of the hash multiplied by 33 and the decimal value of the ASCII
+//representation of each character
+///////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
-unsigned long quickHash(char *pattern){
+long long int djb2(char *pattern){
 
-	int hash = 0;
-	int len = strlen(pattern);
-	if (len!=0)
-	{
-		for (int i = 0; i < len; i++)
-		{
-			hash+=pattern[i]*pow(p,len - i - 1);
-		}
-		hash = hash%m;
-	}
-return hash;
-
-}
-
-
-unsigned long shiftHash(int hash, int lenpat, int idx, char *txt){
-
-	return ((hash - (txt[idx]*(int)pow(p,lenpat -1))%m)*p + txt[idx+lenpat]);
-
-}
-
-
-unsigned long djb2(char *pattern){
-
-	unsigned long hash = 5381;
-	int c;
+	long long int hash = 5381;
+	long long int c;
 	//versione con while più efficiente perchè non calcolo strlen
 	while ((c = *pattern++))
 	{
@@ -59,10 +47,15 @@ unsigned long djb2(char *pattern){
 	return hash;
 }
 
-unsigned long sdbm(char *pattern){
+///////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+//The sdbm function computes the hash by adding the following elements
+//64*hash + 65536*hash - hash + ASCII value of each character
+///////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
-	unsigned long hash = 0;
-	int c;
+long long int sdbm(char *pattern){
+
+	long long int hash = 0;
+	long long int c;
 	while((c = *pattern++)){
 		hash = c + (hash << 6) + (hash << 16) - hash;
 	}
@@ -70,13 +63,17 @@ unsigned long sdbm(char *pattern){
 	return hash;
 }
 
-unsigned long loselose(char *pattern){
+///////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+//The loselose hash function it's very very simple and creates the 
+//hash adding the ASCII value of each letter of the considered string
+///////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
-	unsigned long hash = 0;
-	int c;
+long long int loselose(char *pattern){
+
+	long long int hash = 0;
+	long long int c;
 	while((c = *pattern++))
 		hash += c;
 
 	return hash;
 }
-
