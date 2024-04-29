@@ -10,9 +10,9 @@ Advanced computer architecture project
 
 # Structure of the code
 The files are organized as follow:
-* Comment (above the function body) $\rightarrow$ brief description on how the function works
+* Comment (above the function body) $`\rightarrow`$ brief description on how the function works
 * Body of the function
 
 # Future implementation
 A possible future implementation can be the implementation of a swap algorithm to handle files that are bigger than the size of the RAM.
-The actual version handle file of size $\leq$ RAM_SIZE
+The actual version handle file of size $`\leq`$ RAM_SIZE
