@@ -10,7 +10,7 @@ Advanced computer architecture project
 
 # Structure of the code
 The files are organized as follow:
-* Comment (above the function body) -> brief description on how the function works
+* Comment (above the function body) $\rightarrow$ brief description on how the function works
 * Body of the function
 
 # Future implementation
